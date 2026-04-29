@@ -109,18 +109,30 @@ def get_ai_response(user_input):
     }
 
     payload = {
-        "model": "openai/gpt-3.5-turbo",
+        "model": "openai/gpt-3.5-turbo",  # safer free model
         "messages": [
-            {
-                "role": "system",
-                "content": "You are a STRICT Personal Finance Advisor 💰. Only answer finance-related queries like saving, budgeting, investments."
-            },
+            {"role": "system", "content": "You are a STRICT Personal Finance Advisor."},
             {"role": "user", "content": user_input}
         ]
     }
 
-    res = requests.post(url, headers=headers, json=payload)
-    return res.json()["choices"][0]["message"]["content"]
+    try:
+        res = requests.post(url, headers=headers, json=payload)
+        data = res.json()
+
+        print(data)  # debug (see error in terminal)
+
+        if "choices" in data:
+            return data["choices"][0]["message"]["content"]
+
+        elif "error" in data:
+            return f"❌ API Error: {data['error']['message']}"
+
+        else:
+            return "❌ Unexpected response from API"
+
+    except Exception as e:
+        return f"⚠️ Error: {str(e)}"
 
 # ================== CHAT FLOW ==================
 if user_input:
